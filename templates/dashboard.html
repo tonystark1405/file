@@ -1,0 +1,228 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Research File Manager PRO</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f5f7fb;color:#172033}
+header{height:60px;background:#0b1f3a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:10}
+.brand{font-size:19px;font-weight:800}.userbox{display:flex;align-items:center;gap:10px;font-size:13px}
+.container{max-width:1500px;margin:auto;padding:22px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:18px;flex-wrap:wrap}
+h1{font-size:23px;margin:0 0 4px}.sub{color:#718096;font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{border:0;border-radius:9px;padding:10px 14px;font-weight:700;cursor:pointer;font-family:inherit}
+.primary{background:#0b1f3a;color:#fff}.secondary{background:#eaf0f7;color:#0b1f3a}.danger{background:#fff0f0;color:#b42318}
+.grid{display:grid;grid-template-columns:270px 1fr;gap:18px}
+.card{background:#fff;border:1px solid #e1e7ef;border-radius:15px;box-shadow:0 6px 20px #1720330a}
+.sidebar{padding:14px;height:calc(100vh - 150px);position:sticky;top:80px;overflow:auto}
+.folder{padding:11px;border-radius:10px;cursor:pointer;margin-bottom:5px;border:1px solid transparent}
+.folder:hover{background:#f5f8fc}.folder.active{background:#eaf1fb;border-color:#cddbf0}
+.folder-name{font-weight:700;font-size:14px}.folder-meta{font-size:11px;color:#718096;margin-top:4px}
+.content{padding:20px;min-height:600px}
+.content-head{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+input,select{padding:10px;border:1px solid #d8e0ea;border-radius:9px;width:100%;outline:none;font-family:inherit}
+.search{width:260px}
+.table-wrap{overflow:auto;border:1px solid #e5eaf0;border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:900px}
+th,td{padding:12px;text-align:left;border-bottom:1px solid #edf0f4;font-size:13px;vertical-align:top}
+th{background:#f8fafc;color:#566274;font-size:11px;text-transform:uppercase;letter-spacing:.4px}tr:last-child td{border-bottom:0}
+.badge{display:inline-flex;padding:4px 8px;border-radius:999px;background:#eef3f8;color:#526173;font-size:11px;font-weight:700}
+.fname{font-weight:700;color:#1f5da8;word-break:break-all;margin-bottom:5px}
+.fbtns{display:flex;gap:5px}.missing{color:#a0a8b3;font-size:12px}
+.small{padding:5px 9px;font-size:11px}
+.empty{padding:60px 20px;text-align:center;color:#7a8595}
+.modal{position:fixed;inset:0;background:#0b1f3a66;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal.show{display:flex}.modal-card{background:#fff;border-radius:16px;width:min(640px,100%);max-height:90vh;overflow:auto;padding:22px}
+.modal-title{font-size:19px;font-weight:800;margin-bottom:14px}.form-row{margin:12px 0}.form-row label{font-size:13px;font-weight:700;display:block;margin-bottom:5px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.urow{border:1px solid #e5eaf0;border-radius:12px;padding:12px;margin-bottom:10px}
+.urow-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.chk{display:inline-flex;align-items:center;gap:5px;margin:3px 12px 3px 0;font-size:13px}.chk input{width:auto}
+.rule-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.lbl{display:block;font-size:12px;font-weight:700;color:#566274;margin-bottom:4px}
+.toast{position:fixed;right:22px;bottom:22px;background:#172033;color:#fff;padding:12px 16px;border-radius:10px;display:none;z-index:80;font-size:13px}
+.drop{border:2px dashed #cdd8e6;border-radius:12px;padding:12px;text-align:center;color:#718096;font-size:13px;margin-bottom:14px}
+.drop.over{background:#eaf1fb;border-color:#3267b1}
+</style></head><body>
+<header>
+ <div class="brand">Research File Manager PRO</div>
+ <div class="userbox"><span id="userLabel"></span>
+  <button class="secondary small" onclick="openSettings()">Settings</button>
+  <button class="secondary small" onclick="changePw()">Change password</button>
+  <button class="secondary small" onclick="logout()">Logout</button></div>
+</header>
+<div class="container">
+ <div class="topbar">
+  <div><h1>Research Documents</h1><div class="sub">Files are stored locally on this PC &middot; <span id="dataDir"></span></div></div>
+  <div class="actions" id="adminActions" style="display:none">
+   <button class="primary" onclick="newFolder()">+ New Folder</button>
+   <button class="secondary" onclick="manageUsers()">Users &amp; Access</button>
+   <button class="secondary" onclick="openData()">Open data folder</button>
+  </div>
+ </div>
+ <div class="grid">
+  <aside class="card sidebar"><div style="font-size:12px;font-weight:800;color:#667085;margin:2px 0 10px">FOLDERS</div><div id="folders"></div></aside>
+  <main class="card content">
+   <div id="empty" class="empty">Select a folder to view papers.</div>
+   <div id="folderView" style="display:none">
+    <div class="content-head">
+     <div><h2 id="folderTitle" style="margin:0;font-size:20px"></h2><div id="folderInfo" class="sub"></div></div>
+     <div class="actions">
+      <input id="search" class="search" placeholder="Search paper name..." oninput="renderPapers()">
+      <button class="primary" onclick="pickFiles()">Upload Files</button>
+      <input id="fileInput" type="file" multiple style="display:none" onchange="doUpload([...fileInput.files])">
+      <span id="adminFolderButtons"></span>
+     </div>
+    </div>
+    <div class="drop" id="drop"><span id="ruleHint"></span><br><span class="sub">Saving to: <b id="saveHint"></b> &middot; <a href="#" onclick="openSettings();return false">change</a></span></div>
+    <div class="table-wrap"><table>
+     <thead><tr><th>Paper</th><th>Word</th><th>AI Report</th><th>Plagiarism</th><th></th></tr></thead>
+     <tbody id="papers"></tbody></table></div>
+   </div>
+  </main>
+ </div>
+</div>
+<div id="modal" class="modal"><div class="modal-card"><div id="modalContent"></div></div></div>
+<div id="toast" class="toast"></div>
+<script>
+let me=null,folders=[],selected=null,papers=[];
+const $=id=>document.getElementById(id);
+async function api(url,opts={}){
+ const r=await fetch(url,opts);const d=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(d.error||'Request failed');return d;
+}
+const J=(m,b)=>({method:m,headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})});
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',3200)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function openModal(h){$('modalContent').innerHTML=h;$('modal').classList.add('show')}
+function closeModal(){$('modal').classList.remove('show')}
+
+let settings=null;
+const CATS=['word','ai','plagiarism'];
+function ruleText(r){const ex=r.extensions.join(' / ');return r.suffix?`<b>${esc(r.suffix)}${esc(r.extensions[0])}</b>`+(r.extensions.length>1?' (+'+(r.extensions.length-1)+' more)':''):`<b>${esc(ex)}</b>`}
+async function loadSettings(){
+ settings=await api('/api/settings');
+ $('ruleHint').innerHTML=settings.rules.map(r=>`${ruleText(r)} = ${esc(settings.labels[r.category])}`).join(' &nbsp;&bull;&nbsp; ');
+ $('saveHint').textContent=settings.save_dir||('App storage ('+settings.default_dir+')');
+ $('fileInput').accept=[...new Set(settings.rules.flatMap(r=>r.extensions))].join(',');
+}
+function ruleRow(r,i){return `<div class="urow"><div class="urow-head"><b>${esc(settings.labels[r.category])}</b></div>
+ <div class="rule-grid">
+  <div><label class="lbl">File extension(s)</label><input id="rx${i}" value="${esc(r.extensions.join(', '))}" placeholder=".docx or .pdf, .doc"></div>
+  <div><label class="lbl">Name must end with (before extension)</label><input id="rs${i}" value="${esc(r.suffix)}" placeholder="leave empty for any name"></div>
+ </div></div>`}
+function openSettings(){
+ loadSettings().then(()=>{
+  openModal(`<div class="modal-title">My Settings</div>
+  <div style="font-weight:700;margin-bottom:6px">Sorting rules</div>
+  <div class="sub" style="margin-bottom:10px">Decide how your uploaded files are sorted. Example: Name must end with <b>-ai</b> + extension <b>.pdf</b> sends <i>Paper1-ai.pdf</i> to AI Report and groups it under <i>Paper1</i>. Matching ignores upper/lower case. Files matching no rule are skipped.</div>
+  ${settings.rules.map(ruleRow).join('')}
+  <button class="secondary small" onclick="resetRules()">Reset rules to default</button>
+  <div style="font-weight:700;margin:20px 0 6px">Save location</div>
+  <div class="sub" style="margin-bottom:8px">Where your uploaded files are stored on this PC. Files are saved as <i>Location\\Folder name\\Paper name\\file</i>. Applies to new uploads; files already uploaded stay where they are. Leave empty for the default app storage.</div>
+  <div class="fbtns"><input id="sd" value="${esc(settings.save_dir)}" placeholder="${esc(settings.default_dir)}">
+   <button class="secondary" onclick="browseDir()">Browse…</button></div>
+  <div class="modal-actions"><button class="secondary" onclick="closeModal()">Cancel</button><button class="primary" onclick="saveSettings()">Save settings</button></div>`)})
+ .catch(e=>toast(e.message));
+}
+async function browseDir(){
+ if(window.pywebview&&window.pywebview.api&&window.pywebview.api.pick_folder){
+  const p=await window.pywebview.api.pick_folder();if(p)$('sd').value=p;
+ }else toast('Folder browser is only available in the desktop window - type the path instead.');
+}
+function resetRules(){settings.rules=settings.defaults.map(r=>({...r}));
+ settings.rules.forEach((r,i)=>{$('rx'+i).value=r.extensions.join(', ');$('rs'+i).value=r.suffix})}
+async function saveSettings(){
+ const rules=settings.rules.map((r,i)=>({category:r.category,extensions:$('rx'+i).value,suffix:$('rs'+i).value}));
+ try{await api('/api/settings',J('POST',{rules,save_dir:$('sd').value.trim()}));
+  closeModal();await loadSettings();toast('Settings saved')}catch(e){toast(e.message)}
+}
+
+async function boot(){
+ const d=await api('/api/me');me=d.user;if(!me){location.href='/';return}
+ $('userLabel').textContent=me.username+' · '+me.role;$('dataDir').textContent=d.data_dir;
+ $('adminActions').style.display=me.role==='admin'?'flex':'none';
+ await loadSettings();await loadFolders();
+}
+async function loadFolders(){
+ folders=(await api('/api/folders')).folders||[];
+ $('folders').innerHTML=folders.length?folders.map(f=>`<div class="folder ${selected&&selected.id===f.id?'active':''}" onclick="selectFolder(${f.id})">
+  <div class="folder-name">📁 ${esc(f.name)}</div>
+  <div class="folder-meta">${f.paper_count} paper groups${me.role==='admin'?` · ${f.user_count} users`:''}</div></div>`).join(''):
+  `<div class="empty" style="padding:25px">${me.role==='admin'?'Create a folder to begin.':'No folders assigned.'}</div>`;
+ if(selected&&!folders.some(f=>f.id===selected.id)){selected=null;$('empty').style.display='block';$('folderView').style.display='none'}
+}
+async function selectFolder(id){
+ selected=folders.find(f=>f.id===id);if(!selected)return;
+ try{papers=(await api('/api/folders/'+id+'/papers')).papers||[]}catch(e){return toast(e.message)}
+ await loadFolders();
+ $('empty').style.display='none';$('folderView').style.display='block';
+ $('folderTitle').textContent=selected.name;$('folderInfo').textContent=papers.length+' paper groups';
+ $('adminFolderButtons').innerHTML=me.role==='admin'?`<button class="danger" onclick="deleteFolder(${id})">Delete Folder</button>`:'';
+ renderPapers();
+}
+function cell(p,cat,col){
+ const ex=p[cat+'_exists'];if(!p[col]||!ex)return '<span class="missing">Not uploaded</span>';
+ return `<div class="fname">${esc(p[col])}</div><div class="fbtns">
+  <button class="primary small" onclick="openF(${p.id},'${cat}')">Open</button>
+  <button class="secondary small" onclick="revealF(${p.id},'${cat}')">Show in folder</button>
+  <a href="/download/${p.id}/${cat}"><button class="secondary small">Save copy</button></a></div>`;
+}
+function renderPapers(){
+ const q=($('search').value||'').toLowerCase();
+ const list=papers.filter(p=>p.paper_key.toLowerCase().includes(q));
+ $('papers').innerHTML=list.length?list.map(p=>`<tr>
+  <td><b>${esc(p.paper_key)}</b><br><span class="badge">Paper Group</span></td>
+  <td>${cell(p,'word','word_file')}</td><td>${cell(p,'ai','ai_file')}</td><td>${cell(p,'plagiarism','plagiarism_file')}</td>
+  <td>${me.role==='admin'?`<button class="danger small" onclick="deletePaper(${p.id})">Delete Group</button>`:''}</td></tr>`).join(''):
+  `<tr><td colspan="5"><div class="empty">No matching paper groups.</div></td></tr>`;
+}
+async function openF(id,cat){try{await api(`/api/open/${id}/${cat}`,J('POST'))}catch(e){toast(e.message)}}
+async function revealF(id,cat){try{await api(`/api/reveal/${id}/${cat}`,J('POST'))}catch(e){toast(e.message)}}
+async function openData(){try{await api('/api/open-data-folder',J('POST'))}catch(e){toast(e.message)}}
+function pickFiles(){if(!selected)return toast('Select a folder first');fileInput.value='';fileInput.click()}
+async function doUpload(fs){
+ if(!selected)return toast('Select a folder first');if(!fs.length)return;
+ const fd=new FormData();fs.forEach(f=>fd.append('files',f));
+ try{const d=await api('/api/folders/'+selected.id+'/upload',{method:'POST',body:fd});
+  let m='Uploaded '+d.uploaded.length+' file(s).';if(d.skipped.length)m+=' Skipped '+d.skipped.length+' (no rule matches): '+d.skipped.map(s=>s.file).join(', ');
+  toast(m);await selectFolder(selected.id)}catch(e){toast(e.message)}
+}
+const drop=$('drop');
+['dragenter','dragover'].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();if(selected)drop.classList.add('over')}));
+['dragleave','drop'].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over')}));
+document.addEventListener('drop',e=>{if(selected&&e.dataTransfer&&e.dataTransfer.files.length)doUpload([...e.dataTransfer.files])});
+
+function newFolder(){openModal(`<div class="modal-title">Create Folder</div><div class="form-row"><input id="nf" placeholder="Folder name"></div>
+ <div class="modal-actions"><button class="secondary" onclick="closeModal()">Cancel</button><button class="primary" onclick="createFolder()">Create</button></div>`);$('nf').focus()}
+async function createFolder(){const name=$('nf').value.trim();if(!name)return;
+ try{await api('/api/folders',J('POST',{name}));closeModal();toast('Folder created');await loadFolders()}catch(e){toast(e.message)}}
+async function deleteFolder(id){if(!confirm('Delete this folder and ALL its files from this PC?'))return;
+ try{await api('/api/folders/'+id,{method:'DELETE'});selected=null;toast('Folder deleted');await loadFolders()}catch(e){toast(e.message)}}
+async function deletePaper(id){if(!confirm('Delete this paper group and its files from this PC?'))return;
+ try{await api('/api/papers/'+id,{method:'DELETE'});toast('Paper group deleted');await selectFolder(selected.id)}catch(e){toast(e.message)}}
+
+async function manageUsers(){
+ const us=(await api('/api/users')).users;
+ openModal(`<div class="modal-title">Users &amp; Folder Access</div>`+us.map(u=>`<div class="urow">
+  <div class="urow-head"><div><b>${esc(u.username)}</b> <span class="badge">${u.role}</span></div>
+  <div class="fbtns"><button class="secondary small" onclick="resetPw(${u.id},'${esc(u.username)}')">Reset password</button>
+  ${u.id!==me.id?`<button class="danger small" onclick="delUser(${u.id})">Delete</button>`:''}</div></div>
+  ${u.role==='admin'?'<div class="sub">Admins can access every folder.</div>':(folders.length?folders.map(f=>`<label class="chk"><input type="checkbox" ${u.folder_ids.includes(f.id)?'checked':''}
+   onchange="toggleAccess(${f.id},${u.id},this.checked)"> ${esc(f.name)}</label>`).join(''):'<div class="sub">No folders yet.</div>')}
+  </div>`).join('')+`<div class="urow"><b>Add user</b>
+  <div class="form-row"><input id="nu" placeholder="Username"></div><div class="form-row"><input id="np" type="password" placeholder="Password (min 4 chars)"></div>
+  <div class="form-row"><select id="nr"><option value="user">Normal user</option><option value="admin">Admin</option></select></div>
+  <button class="primary" onclick="createUser()">Create user</button></div>
+  <div class="modal-actions"><button class="secondary" onclick="closeModal();loadFolders()">Close</button></div>`);
+}
+async function toggleAccess(f,u,on){try{on?await api(`/api/folders/${f}/assign`,J('POST',{user_id:u})):await api(`/api/folders/${f}/users/${u}`,{method:'DELETE'});toast('Access updated')}catch(e){toast(e.message)}}
+async function createUser(){try{await api('/api/users',J('POST',{username:$('nu').value.trim(),password:$('np').value,role:$('nr').value}));toast('User created');manageUsers()}catch(e){toast(e.message)}}
+async function delUser(id){if(!confirm('Delete this user?'))return;try{await api('/api/users/'+id,{method:'DELETE'});manageUsers()}catch(e){toast(e.message)}}
+async function resetPw(id,name){const p=prompt('New password for '+name+':');if(!p)return;try{await api(`/api/users/${id}/reset-password`,J('POST',{new_password:p}));toast('Password reset')}catch(e){toast(e.message)}}
+function changePw(){openModal(`<div class="modal-title">Change Password</div>
+ <div class="form-row"><label>Current password</label><input id="op" type="password"></div>
+ <div class="form-row"><label>New password</label><input id="npw" type="password"></div>
+ <div class="modal-actions"><button class="secondary" onclick="closeModal()">Cancel</button><button class="primary" onclick="savePw()">Save</button></div>`)}
+async function savePw(){try{await api('/api/change-password',J('POST',{old_password:$('op').value,new_password:$('npw').value}));closeModal();toast('Password changed')}catch(e){toast(e.message)}}
+async function logout(){await api('/api/logout',J('POST'));location.href='/'}
+boot().catch(()=>location.href='/');
+</script></body></html>
